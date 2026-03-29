@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# Bennett — Personal AI Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A progressive web app (PWA) that serves as your personal AI assistant, built with React, TypeScript, Firebase, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **AI Chat** — Conversational interface with markdown rendering, powered by OpenAI or Anthropic
+- **Multi-provider routing** — Switch between OpenAI (GPT-4) and Anthropic (Claude) from Settings
+- **Firebase auth** — Sign in with Google or email/password
+- **Connections** — Connect services like Gmail, Google Calendar, Drive, Philips Hue, Spotify, Weather and more via MCP-style integrations
+- **PWA ready** — Installable on mobile and desktop
+- **Responsive** — Mobile bottom nav + desktop sidebar layout
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Vite + React + TypeScript
+- Firebase (Auth + Firestore)
+- Zustand (state management)
+- Tailwind CSS v3
+- react-markdown + remark-gfm
+- lucide-react icons
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. **Clone and install**
+   ```bash
+   npm install
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+2. **Configure environment** — copy `.env.example` to `.env` and fill in your keys:
+   ```bash
+   cp .env.example .env
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+3. **Run dev server**
+   ```bash
+   npm run dev
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `VITE_FIREBASE_API_KEY` | Firebase project API key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID |
+| `VITE_FIREBASE_APP_ID` | Firebase app ID |
+| `VITE_OPENAI_API_KEY` | OpenAI API key (for GPT-4) |
+| `VITE_ANTHROPIC_API_KEY` | Anthropic API key (for Claude) |
+
+## Project Structure
+
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+src/
+├── components/
+│   ├── chat/         # ChatBubble, MessageInput, TypingIndicator
+│   ├── layout/       # Navigation, ProtectedRoute
+│   └── ui/           # Button, Card, Input, StatusDot, ConnectionCard
+├── core/             # AIRouter, MCPBridge, Orchestrator
+├── hooks/            # useAuth, useChat
+├── lib/              # Firebase config, utilities
+├── mcp/              # MCP kit registry
+├── pages/            # Auth, Home, Connections, Settings
+├── providers/        # OpenAI, Anthropic provider implementations
+└── stores/           # Zustand stores (auth, chat, connections)
 ```
