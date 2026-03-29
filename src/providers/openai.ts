@@ -1,5 +1,7 @@
 import type { AIProvider, Message, ChatOptions } from './types';
 
+const OPENAI_MODEL = 'gpt-4o-mini';
+
 export class OpenAIProvider implements AIProvider {
   name = 'OpenAI';
   private apiKey: string;
@@ -16,7 +18,7 @@ export class OpenAIProvider implements AIProvider {
         Authorization: `Bearer ${this.apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4-turbo-preview',
+        model: OPENAI_MODEL,
         messages,
         temperature: _options?.temperature ?? 0.7,
         max_tokens: _options?.maxTokens ?? 2048,
@@ -24,10 +26,25 @@ export class OpenAIProvider implements AIProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+      let detail = response.statusText;
+
+      try {
+        const errorBody = await response.json();
+        detail = errorBody?.error?.message || errorBody?.message || detail;
+      } catch {
+        // Keep the HTTP status text if the response body is not JSON.
+      }
+
+      throw new Error(`OpenAI API error (${response.status}): ${detail}`);
     }
 
     const data = await response.json();
-    return data.choices[0].message.content ?? '';
+
+    const content = data.choices?.[0]?.message?.content;
+    if (typeof content !== 'string' || !content.trim()) {
+      throw new Error('OpenAI API returned an empty response.');
+    }
+
+    return content;
   }
 }

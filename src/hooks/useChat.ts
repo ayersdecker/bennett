@@ -91,11 +91,12 @@ export function useChat() {
         });
         setConversationId(convRef.id);
       }
-    } catch {
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'Unknown provider error.';
       const errorMessage = {
         id: generateId(),
         role: 'assistant' as const,
-        content: 'Sorry, I encountered an error. Please check your provider selection and API key in Settings.',
+        content: `Sorry, I encountered an error. ${detail}`,
         timestamp: new Date(),
       };
       addMessage(errorMessage);

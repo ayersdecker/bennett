@@ -31,10 +31,25 @@ export class AnthropicProvider implements AIProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.statusText}`);
+      let detail = response.statusText;
+
+      try {
+        const errorBody = await response.json();
+        detail = errorBody?.error?.message || errorBody?.message || detail;
+      } catch {
+        // Keep the HTTP status text if the response body is not JSON.
+      }
+
+      throw new Error(`Anthropic API error (${response.status}): ${detail}`);
     }
 
     const data = await response.json();
-    return data.content[0].text ?? '';
+
+    const content = data.content?.[0]?.text;
+    if (typeof content !== 'string' || !content.trim()) {
+      throw new Error('Anthropic API returned an empty response.');
+    }
+
+    return content;
   }
 }
