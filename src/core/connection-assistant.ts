@@ -1,7 +1,7 @@
 import { MCP_REGISTRY, type MCPKit } from '../mcp/registry';
 import type { MCPConnection } from '../stores/connectionsStore';
 
-const connectionIntentPattern = /\b(connect|setup|set up|configure|link|add)\b/i;
+const connectionIntentPattern = /\b(connect|setup|set up|configure|link|authorize|oauth)\b/i;
 const cancelPattern = /\b(cancel|stop|never mind|nevermind)\b/i;
 const valueSeparatorPattern = /\s*(?:=|:| is )\s*/i;
 

@@ -40,6 +40,33 @@ function findReferencedConnection(message: string, connections: MCPConnection[])
   return null;
 }
 
+function inferConnectionFromIntent(message: string, connections: MCPConnection[]) {
+  const normalizedMessage = normalize(message);
+  const connected = connections.filter((connection) => connection.status === 'connected');
+
+  const matchById = (ids: SupportedKitId[], pattern: RegExp) => {
+    if (!pattern.test(normalizedMessage)) {
+      return null;
+    }
+
+    const matches = connected.filter((connection) => ids.includes(connection.id as SupportedKitId));
+    return matches.length === 1 ? matches[0] : null;
+  };
+
+  return (
+    matchById(['google-calendar'], /\b(calendar|event|events|schedule|meeting|appointment)\b/) ||
+    matchById(['gmail'], /\b(gmail|email|mail|inbox|message|messages)\b/) ||
+    matchById(['google-drive'], /\b(drive|folder|folders|file|files|document|documents)\b/) ||
+    matchById(['google-tasks'], /\b(task|tasks|todo|to do|reminder|reminders)\b/) ||
+    matchById(['google-contacts'], /\b(contact|contacts|person|people|address book)\b/) ||
+    matchById(['weather'], /\b(weather|forecast|temperature)\b/) ||
+    matchById(['news'], /\b(news|headline|headlines)\b/) ||
+    matchById(['maps'], /\b(map|maps|location|directions|address|where)\b/) ||
+    matchById(['philips-hue'], /\b(light|lights|lamp|lamps|hue)\b/) ||
+    null
+  );
+}
+
 function findReferencedKnownKit(message: string) {
   const normalizedMessage = normalize(message);
   for (const kit of MCP_REGISTRY) {
@@ -564,7 +591,7 @@ function getSupportedActionHint(connection: MCPConnection) {
 }
 
 export async function handleMCPChatRequest(message: string, connections: MCPConnection[]) {
-  const referencedConnection = findReferencedConnection(message, connections);
+  const referencedConnection = findReferencedConnection(message, connections) || inferConnectionFromIntent(message, connections);
   if (!referencedConnection) {
     const referencedKit = findReferencedKnownKit(message);
     if (referencedKit && requestIntentPattern.test(message)) {
