@@ -35,7 +35,7 @@ export function Home() {
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6 pb-36 md:pb-6">
         <div className="max-w-3xl mx-auto">
           {messages.length === 0 && (
             <div className="text-center py-16">
@@ -61,7 +61,7 @@ export function Home() {
       </div>
 
       {/* Input */}
-      <div className="px-4 pb-20 md:pb-6 pt-3 bg-background">
+      <div className="sticky bottom-24 md:bottom-0 px-4 pb-4 md:pb-6 pt-3 bg-background/95 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto">
           <MessageInput onSend={sendMessage} disabled={isTyping} />
         </div>

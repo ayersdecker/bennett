@@ -2,6 +2,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Message } from '../../stores/chatStore';
 import { formatTime } from '../../lib/utils';
+import { ConnectionActionButton } from './ConnectionActionButton';
 
 interface ChatBubbleProps {
   message: Message;
@@ -24,6 +25,9 @@ export function ChatBubble({ message }: ChatBubbleProps) {
         ) : (
           <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-1 prose-headings:my-2">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+            {message.action?.type === 'oauth-connect' && (
+              <ConnectionActionButton kitId={message.action.kitId} label={message.action.label} />
+            )}
           </div>
         )}
         <p

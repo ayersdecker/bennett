@@ -5,6 +5,11 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  action?: {
+    type: 'oauth-connect';
+    kitId: string;
+    label: string;
+  };
 }
 
 interface ChatState {

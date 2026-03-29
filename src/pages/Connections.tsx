@@ -7,14 +7,16 @@ import { useConnectionsStore } from '../stores/connectionsStore';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
+import { connectOAuthKit, supportsOAuthHandoff } from '../core/oauth-connections';
 
 type Category = 'all' | 'google' | 'smart-home' | 'custom';
 
 export function Connections() {
   const [activeCategory, setActiveCategory] = useState<Category>('all');
   const [modalKit, setModalKit] = useState<MCPKit | null>(null);
-  const [apiKey, setApiKey] = useState('');
-  const { connections, updateConnection } = useConnectionsStore();
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [oauthLoading, setOauthLoading] = useState(false);
+  const { connections, upsertConnection, updateConnection } = useConnectionsStore();
 
   const categories: Array<{ id: Category; label: string; emoji: string }> = [
     { id: 'all', label: 'All', emoji: '🔌' },
@@ -29,26 +31,73 @@ export function Connections() {
 
   const handleConnect = (kitId: string) => {
     const kit = MCP_REGISTRY.find((k) => k.id === kitId);
-    if (kit) setModalKit(kit);
+    if (kit) {
+      const existingConnection = connections.find((connection) => connection.id === kitId);
+      setFormValues(existingConnection?.config?.values || {});
+      setModalKit(kit);
+    }
   };
 
   const handleSaveConnection = () => {
     if (!modalKit) return;
-    updateConnection(modalKit.id, {
+    upsertConnection({
       id: modalKit.id,
       name: modalKit.name,
       category: modalKit.category,
       icon: modalKit.iconName,
       description: modalKit.description,
       status: 'connected',
-      config: { apiKey, permissions: [] },
+      config: {
+        apiKey: formValues.apiKey,
+        values: formValues,
+        permissions: modalKit.oauthScopes || [],
+      },
     });
     setModalKit(null);
-    setApiKey('');
+    setFormValues({});
   };
 
   const handleRemove = (kitId: string) => {
     updateConnection(kitId, { status: 'disconnected' });
+  };
+
+  const handleOAuthConnection = async () => {
+    if (!modalKit) return;
+
+    setOauthLoading(true);
+    try {
+      const result = await connectOAuthKit(modalKit);
+      upsertConnection({
+        id: modalKit.id,
+        name: modalKit.name,
+        category: modalKit.category,
+        icon: modalKit.iconName,
+        description: modalKit.description,
+        status: 'connected',
+        config: {
+          oauthToken: result.oauthToken,
+          permissions: modalKit.oauthScopes || [],
+        },
+      });
+      setModalKit(null);
+      setFormValues({});
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'OAuth authorization failed.';
+      upsertConnection({
+        id: modalKit.id,
+        name: modalKit.name,
+        category: modalKit.category,
+        icon: modalKit.iconName,
+        description: modalKit.description,
+        status: 'error',
+        config: {
+          permissions: modalKit.oauthScopes || [],
+        },
+      });
+      console.error(`Failed to connect ${modalKit.name}:`, detail);
+    } finally {
+      setOauthLoading(false);
+    }
   };
 
   return (
@@ -112,9 +161,15 @@ export function Connections() {
                 <p className="text-sm text-gray-600 mb-4">
                   Connect with Google OAuth to grant access to {modalKit.name}.
                 </p>
-                <Button onClick={handleSaveConnection} className="w-full">
-                  Connect with Google
-                </Button>
+                {supportsOAuthHandoff(modalKit) ? (
+                  <Button onClick={handleOAuthConnection} className="w-full" loading={oauthLoading}>
+                    Connect with Google
+                  </Button>
+                ) : (
+                  <Button onClick={handleSaveConnection} className="w-full">
+                    Mark Pending
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -125,12 +180,18 @@ export function Connections() {
                     type={field.type}
                     icon={Key}
                     placeholder={field.placeholder}
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    value={formValues[field.key] || ''}
+                    onChange={(e) => setFormValues((current) => ({
+                      ...current,
+                      [field.key]: e.target.value,
+                    }))}
                   />
                 ))}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="ghost" className="flex-1" onClick={() => setModalKit(null)}>
+                  <Button variant="ghost" className="flex-1" onClick={() => {
+                    setModalKit(null);
+                    setFormValues({});
+                  }}>
                     Cancel
                   </Button>
                   <Button className="flex-1" onClick={handleSaveConnection}>

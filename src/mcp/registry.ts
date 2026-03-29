@@ -4,6 +4,7 @@ export interface MCPKit {
   category: 'google' | 'smart-home' | 'custom';
   iconName: string;
   description: string;
+  aliases?: string[];
   requiresOAuth: boolean;
   oauthScopes?: string[];
   configFields?: Array<{
@@ -21,6 +22,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'google',
     iconName: 'Mail',
     description: 'Read and send emails',
+    aliases: ['email', 'mail', 'google mail'],
     requiresOAuth: true,
     oauthScopes: ['gmail.readonly', 'gmail.send'],
   },
@@ -30,6 +32,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'google',
     iconName: 'Calendar',
     description: 'Manage events and reminders',
+    aliases: ['calendar', 'google cal'],
     requiresOAuth: true,
     oauthScopes: ['calendar.readonly', 'calendar.events'],
   },
@@ -39,6 +42,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'google',
     iconName: 'HardDrive',
     description: 'Access and manage files',
+    aliases: ['drive', 'google drive'],
     requiresOAuth: true,
     oauthScopes: ['drive.readonly', 'drive.file'],
   },
@@ -48,6 +52,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'google',
     iconName: 'CheckSquare',
     description: 'Manage tasks and to-dos',
+    aliases: ['tasks', 'todo', 'to-do'],
     requiresOAuth: true,
     oauthScopes: ['tasks'],
   },
@@ -57,6 +62,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'google',
     iconName: 'Users',
     description: 'Access your contacts',
+    aliases: ['contacts', 'address book'],
     requiresOAuth: true,
     oauthScopes: ['contacts.readonly'],
   },
@@ -66,6 +72,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'smart-home',
     iconName: 'Lightbulb',
     description: 'Control your smart lights',
+    aliases: ['hue', 'lights', 'smart lights'],
     requiresOAuth: false,
     configFields: [
       { key: 'bridgeIp', label: 'Bridge IP Address', type: 'text', placeholder: '192.168.1.x' },
@@ -78,6 +85,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'custom',
     iconName: 'Cloud',
     description: 'Current weather and forecasts',
+    aliases: ['openweather', 'forecast'],
     requiresOAuth: false,
     configFields: [
       { key: 'apiKey', label: 'OpenWeather API Key', type: 'password' },
@@ -89,6 +97,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'custom',
     iconName: 'MapPin',
     description: 'Location and navigation',
+    aliases: ['maps', 'location', 'navigation'],
     requiresOAuth: false,
     configFields: [
       { key: 'apiKey', label: 'Maps API Key', type: 'password' },
@@ -100,6 +109,7 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'custom',
     iconName: 'Music',
     description: 'Control music playback',
+    aliases: ['music'],
     requiresOAuth: true,
     oauthScopes: ['user-read-playback-state', 'user-modify-playback-state'],
   },
@@ -109,9 +119,14 @@ export const MCP_REGISTRY: MCPKit[] = [
     category: 'custom',
     iconName: 'Newspaper',
     description: 'Latest news and articles',
+    aliases: ['headlines'],
     requiresOAuth: false,
     configFields: [
       { key: 'apiKey', label: 'News API Key', type: 'password' },
     ],
   },
 ];
+
+export function getMCPKitById(kitId: string) {
+  return MCP_REGISTRY.find((kit) => kit.id === kitId) || null;
+}
