@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "firebase:login": "npx firebase-tools login",
+    "firebase:use": "npx firebase-tools use",
+    "firebase:deploy:rules": "npx firebase-tools deploy --only firestore:rules"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",

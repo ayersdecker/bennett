@@ -74,6 +74,18 @@ After pushing to `main`, enable GitHub Pages in the repository settings and choo
 
 Production builds use a GitHub Pages-safe base path and hash routing, so deep links work without server rewrites.
 
+## Firebase Rules Deploy
+
+This repo is configured to deploy Firestore rules with the Firebase CLI.
+
+Commands:
+
+- `npm run firebase:login`
+- `npm run firebase:use <your-project-id>`
+- `npm run firebase:deploy:rules`
+
+The Firebase CLI will create `.firebaserc` after you select your project.
+
 ## Project Structure
 
 ```

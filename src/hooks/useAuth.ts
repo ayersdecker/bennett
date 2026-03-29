@@ -1,8 +1,22 @@
 import { useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '../lib/firebase';
 import { useAuthStore } from '../stores/authStore';
+
+function createFallbackProfile(firebaseUser: User) {
+  return {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email,
+    name: firebaseUser.displayName,
+    photoURL: firebaseUser.photoURL,
+    preferences: {
+      aiProvider: 'openai' as const,
+      theme: 'light' as const,
+      assistantName: 'Assistant',
+    },
+  };
+}
 
 export function useAuth() {
   const { user, profile, loading, setUser, setProfile, setLoading } = useAuthStore();
@@ -18,44 +32,29 @@ export function useAuth() {
       setUser(firebaseUser);
 
       if (firebaseUser) {
+        const fallbackProfile = createFallbackProfile(firebaseUser);
+
         try {
           const userRef = doc(db, 'users', firebaseUser.uid);
           const userSnap = await getDoc(userRef);
 
           if (userSnap.exists()) {
             setProfile({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              name: firebaseUser.displayName,
-              photoURL: firebaseUser.photoURL,
-              preferences: userSnap.data().preferences ?? {
-                aiProvider: 'openai',
-                theme: 'light',
-                assistantName: 'Assistant',
-              },
+              ...fallbackProfile,
+              preferences: userSnap.data().preferences ?? fallbackProfile.preferences,
             });
           } else {
-            const defaultProfile = {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              name: firebaseUser.displayName,
-              photoURL: firebaseUser.photoURL,
-              preferences: {
-                aiProvider: 'openai' as const,
-                theme: 'light' as const,
-                assistantName: 'Assistant',
-              },
-            };
             await setDoc(userRef, {
               email: firebaseUser.email,
               name: firebaseUser.displayName,
               createdAt: new Date(),
-              preferences: defaultProfile.preferences,
+              preferences: fallbackProfile.preferences,
             });
-            setProfile(defaultProfile);
+            setProfile(fallbackProfile);
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
+          setProfile(fallbackProfile);
         }
       } else {
         setProfile(null);
