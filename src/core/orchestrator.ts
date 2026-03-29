@@ -6,8 +6,10 @@ export class Orchestrator {
   private aiRouter: AIRouter;
   private conversationHistory: Message[] = [];
 
-  constructor(aiRouter: AIRouter, _mcpBridge: MCPBridge) {
+  constructor(aiRouter: AIRouter, mcpBridge: MCPBridge) {
     this.aiRouter = aiRouter;
+    // mcpBridge will be used when MCP tool calling is implemented
+    void mcpBridge;
   }
 
   async sendMessage(

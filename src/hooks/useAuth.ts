@@ -1,13 +1,19 @@
 import { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
+import { auth, db, isFirebaseConfigured } from '../lib/firebase';
 import { useAuthStore } from '../stores/authStore';
 
 export function useAuth() {
   const { user, profile, loading, setUser, setProfile, setLoading } = useAuthStore();
 
   useEffect(() => {
+    if (!isFirebaseConfigured) {
+      // No Firebase config — skip auth listener, show unauthenticated state
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 

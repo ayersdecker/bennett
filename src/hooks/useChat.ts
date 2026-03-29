@@ -71,7 +71,7 @@ export function useChat() {
         });
         setConversationId(convRef.id);
       }
-    } catch (_error) {
+    } catch {
       const errorMessage = {
         id: generateId(),
         role: 'assistant' as const,
