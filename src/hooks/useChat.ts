@@ -16,6 +16,7 @@ import {
   isCancelConnectionSetup,
 } from '../core/connection-assistant';
 import { supportsOAuthHandoff } from '../core/oauth-connections';
+import { handleMCPChatRequest } from '../core/mcp-runtime';
 import { generateId } from '../lib/utils';
 
 const providerApiKeyStorageKeys = {
@@ -34,7 +35,7 @@ function getStoredProviderApiKey(providerType: 'openai' | 'anthropic') {
 export function useChat() {
   const { messages, isTyping, addMessage, setTyping, setConversationId, conversationId } = useChatStore();
   const { user, profile } = useAuthStore();
-  const { pendingSetup, setPendingSetup, upsertConnection } = useConnectionsStore();
+  const { connections, pendingSetup, setPendingSetup, upsertConnection } = useConnectionsStore();
 
   const saveConversationTurn = useCallback(async (userContent: string, assistantContent: string) => {
     if (!user) {
@@ -208,6 +209,18 @@ export function useChat() {
         }
       }
 
+      const mcpResponse = await handleMCPChatRequest(content, connections);
+      if (mcpResponse) {
+        addMessage({
+          id: generateId(),
+          role: 'assistant' as const,
+          content: mcpResponse,
+          timestamp: new Date(),
+        });
+        await saveConversationTurn(content, mcpResponse);
+        return;
+      }
+
       const providerType = profile?.preferences?.aiProvider || 'openai';
       const apiKey = providerType === 'anthropic'
         ? getStoredProviderApiKey('anthropic') || import.meta.env.VITE_ANTHROPIC_API_KEY || ''
@@ -263,6 +276,7 @@ export function useChat() {
     addMessage,
     setTyping,
     pendingSetup,
+    connections,
     saveConversationTurn,
     setPendingSetup,
     upsertConnection,

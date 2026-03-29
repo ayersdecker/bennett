@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface MCPConnection {
   id: string;
@@ -29,28 +30,39 @@ interface ConnectionsState {
   setPendingSetup: (pendingSetup: PendingConnectionSetup | null) => void;
 }
 
-export const useConnectionsStore = create<ConnectionsState>((set) => ({
-  connections: [],
-  pendingSetup: null,
-  setConnections: (connections) => set({ connections }),
-  upsertConnection: (connection) =>
-    set((state) => {
-      const existingIndex = state.connections.findIndex((c) => c.id === connection.id);
-      if (existingIndex === -1) {
-        return { connections: [...state.connections, connection] };
-      }
+export const useConnectionsStore = create<ConnectionsState>()(
+  persist(
+    (set) => ({
+      connections: [],
+      pendingSetup: null,
+      setConnections: (connections) => set({ connections }),
+      upsertConnection: (connection) =>
+        set((state) => {
+          const existingIndex = state.connections.findIndex((c) => c.id === connection.id);
+          if (existingIndex === -1) {
+            return { connections: [...state.connections, connection] };
+          }
 
-      return {
-        connections: state.connections.map((c) =>
-          c.id === connection.id ? { ...c, ...connection } : c
-        ),
-      };
+          return {
+            connections: state.connections.map((c) =>
+              c.id === connection.id ? { ...c, ...connection } : c
+            ),
+          };
+        }),
+      updateConnection: (id, updates) =>
+        set((state) => ({
+          connections: state.connections.map((c) =>
+            c.id === id ? { ...c, ...updates } : c
+          ),
+        })),
+      setPendingSetup: (pendingSetup) => set({ pendingSetup }),
     }),
-  updateConnection: (id, updates) =>
-    set((state) => ({
-      connections: state.connections.map((c) =>
-        c.id === id ? { ...c, ...updates } : c
-      ),
-    })),
-  setPendingSetup: (pendingSetup) => set({ pendingSetup }),
-}));
+    {
+      name: 'bennett-connections',
+      partialize: (state) => ({
+        connections: state.connections,
+        pendingSetup: state.pendingSetup,
+      }),
+    }
+  )
+);
