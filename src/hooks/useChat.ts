@@ -6,6 +6,19 @@ import { useAuthStore } from '../stores/authStore';
 import { AIRouter } from '../core/ai-router';
 import { generateId } from '../lib/utils';
 
+const providerApiKeyStorageKeys = {
+  openai: 'bennett.openaiApiKey',
+  anthropic: 'bennett.anthropicApiKey',
+} as const;
+
+function getStoredProviderApiKey(providerType: 'openai' | 'anthropic') {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  return window.localStorage.getItem(providerApiKeyStorageKeys[providerType])?.trim() || '';
+}
+
 export function useChat() {
   const { messages, isTyping, addMessage, setTyping, setConversationId, conversationId } = useChatStore();
   const { user, profile } = useAuthStore();
@@ -24,8 +37,15 @@ export function useChat() {
     setTyping(true);
 
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.VITE_ANTHROPIC_API_KEY || '';
       const providerType = profile?.preferences?.aiProvider || 'openai';
+      const apiKey = providerType === 'anthropic'
+        ? getStoredProviderApiKey('anthropic') || import.meta.env.VITE_ANTHROPIC_API_KEY || ''
+        : getStoredProviderApiKey('openai') || import.meta.env.VITE_OPENAI_API_KEY || '';
+
+      if (!apiKey) {
+        throw new Error('Missing provider API key');
+      }
+
       const router = new AIRouter(providerType, apiKey);
 
       const assistantName = profile?.preferences?.assistantName || 'Assistant';
@@ -75,7 +95,7 @@ export function useChat() {
       const errorMessage = {
         id: generateId(),
         role: 'assistant' as const,
-        content: 'Sorry, I encountered an error. Please check your API configuration in Settings.',
+        content: 'Sorry, I encountered an error. Please check your provider selection and API key in Settings.',
         timestamp: new Date(),
       };
       addMessage(errorMessage);

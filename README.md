@@ -52,8 +52,27 @@ A progressive web app (PWA) that serves as your personal AI assistant, built wit
 | `VITE_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket |
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID |
 | `VITE_FIREBASE_APP_ID` | Firebase app ID |
-| `VITE_OPENAI_API_KEY` | OpenAI API key (for GPT-4) |
-| `VITE_ANTHROPIC_API_KEY` | Anthropic API key (for Claude) |
+| `VITE_OPENAI_API_KEY` | Optional local dev fallback for OpenAI |
+| `VITE_ANTHROPIC_API_KEY` | Optional local dev fallback for Anthropic |
+
+For GitHub Pages deployments, do not publish model provider secrets through Vite env vars. Enter provider API keys in Settings after loading the app; they are stored only in the current browser.
+
+## GitHub Pages Deploy
+
+This repo includes a GitHub Actions workflow that builds and deploys the app to GitHub Pages.
+
+Required GitHub Actions secrets:
+
+- `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`
+- `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`
+
+After pushing to `main`, enable GitHub Pages in the repository settings and choose `GitHub Actions` as the source.
+
+Production builds use a GitHub Pages-safe base path and hash routing, so deep links work without server rewrites.
 
 ## Project Structure
 

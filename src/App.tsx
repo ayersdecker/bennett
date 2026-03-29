@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import { Navigation } from './components/layout/Navigation';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
@@ -25,8 +25,10 @@ function AppContent() {
 
 export default function App() {
   useAuth();
+  const Router = import.meta.env.PROD ? HashRouter : BrowserRouter;
+
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <AppContent />
     </Router>
   );

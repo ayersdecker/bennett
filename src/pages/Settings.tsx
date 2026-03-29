@@ -8,6 +8,19 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 
+const providerApiKeyStorageKeys = {
+  openai: 'bennett.openaiApiKey',
+  anthropic: 'bennett.anthropicApiKey',
+} as const;
+
+function getStoredProviderApiKey(providerType: keyof typeof providerApiKeyStorageKeys) {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+
+  return window.localStorage.getItem(providerApiKeyStorageKeys[providerType]) || '';
+}
+
 export function Settings() {
   const { user, profile, setProfile } = useAuthStore();
   const [assistantName, setAssistantName] = useState(
@@ -16,6 +29,8 @@ export function Settings() {
   const [aiProvider, setAiProvider] = useState(
     profile?.preferences?.aiProvider || 'openai'
   );
+  const [openAIApiKey, setOpenAIApiKey] = useState(() => getStoredProviderApiKey('openai'));
+  const [anthropicApiKey, setAnthropicApiKey] = useState(() => getStoredProviderApiKey('anthropic'));
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -39,6 +54,22 @@ export function Settings() {
           aiProvider: aiProvider as 'openai' | 'anthropic',
         },
       });
+
+      if (typeof window !== 'undefined') {
+        const values = {
+          openai: openAIApiKey.trim(),
+          anthropic: anthropicApiKey.trim(),
+        };
+
+        (Object.entries(values) as Array<[keyof typeof providerApiKeyStorageKeys, string]>).forEach(([providerType, value]) => {
+          if (value) {
+            window.localStorage.setItem(providerApiKeyStorageKeys[providerType], value);
+          } else {
+            window.localStorage.removeItem(providerApiKeyStorageKeys[providerType]);
+          }
+        });
+      }
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {
@@ -92,6 +123,28 @@ export function Settings() {
                 </label>
               ))}
             </div>
+
+            <p className="text-sm text-gray-500">
+              Provider API keys are stored only in this browser so they are not exposed in the GitHub Pages build.
+            </p>
+
+            <Input
+              label="OpenAI API Key"
+              type="password"
+              autoComplete="off"
+              value={openAIApiKey}
+              onChange={(e) => setOpenAIApiKey(e.target.value)}
+              placeholder="sk-..."
+            />
+
+            <Input
+              label="Anthropic API Key"
+              type="password"
+              autoComplete="off"
+              value={anthropicApiKey}
+              onChange={(e) => setAnthropicApiKey(e.target.value)}
+              placeholder="sk-ant-..."
+            />
           </div>
         </Card>
 
