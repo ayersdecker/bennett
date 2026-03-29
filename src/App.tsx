@@ -25,11 +25,18 @@ function AppContent() {
 
 export default function App() {
   useAuth();
-  const Router = import.meta.env.PROD ? HashRouter : BrowserRouter;
+
+  if (import.meta.env.PROD) {
+    return (
+      <HashRouter>
+        <AppContent />
+      </HashRouter>
+    );
+  }
 
   return (
-    <Router basename={import.meta.env.BASE_URL}>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <AppContent />
-    </Router>
+    </BrowserRouter>
   );
 }
